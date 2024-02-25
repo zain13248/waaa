@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.alignToAprilTag;
 import frc.robot.commands.ArmCommand;
 import frc.robot.commands.HandleNoteSequence;
 import frc.robot.commands.IndexCommand;
@@ -33,6 +34,8 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.OutTakeSubsystem;
 // import frc.robot.subsystems.OutTakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.limelight;
 import swervelib.SwerveDrive;
 
 import java.io.File;
@@ -51,12 +54,17 @@ public class RobotContainer
     private final OutTakeSubsystem outTakeSubsystem = new OutTakeSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
 
+    private final limelight limelight = new limelight();
+
+
   //     private final OutTakeSubsystem outakeSubsystem = new OutTakeSubsystem();
 
 
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                          "swerve/neo"));
+
+
   // CommandJoystick rotationController = new CommandJoystick(1);
   // Replace with CommandPS4Controller or CommandJoystick if needed
   CommandJoystick driverController = new CommandJoystick(1);
@@ -89,27 +97,28 @@ public class RobotContainer
     // controls are front-left positive
     // left stick controls translation
     // right stick controls the desired angle NOT angular rotation
-    // Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
-    //     () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-    //     () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-    //     () -> driverXbox.getRightX(),
-    //     () -> driverXbox.getRightY());
+    Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
+        () -> MathUtil.applyDeadband(driverXbox.getRawAxis(1), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(driverXbox.getRawAxis(0), OperatorConstants.LEFT_X_DEADBAND),
+        () -> driverXbox.getRawAxis(4),
+        () -> driverXbox.getRawAxis(5));
 
 
-        Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
-          () -> MathUtil.applyDeadband(driverXbox.getRawAxis(1), OperatorConstants.LEFT_Y_DEADBAND), // Left Stick Y-Axis
-          () -> MathUtil.applyDeadband(driverXbox.getRawAxis(0), OperatorConstants.LEFT_X_DEADBAND), // Left Stick X-Axis
-          () -> MathUtil.applyDeadband(driverXbox.getRawAxis(4), OperatorConstants.RIGHT_X_DEADBAND) // Right Stick X-Axis
-          );
+        // Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
+        //   () -> MathUtil.applyDeadband(driverXbox.getRawAxis(1), OperatorConstants.LEFT_Y_DEADBAND), // Left Stick Y-Axis
+        //   () -> MathUtil.applyDeadband(driverXbox.getRawAxis(0), OperatorConstants.LEFT_X_DEADBAND), // Left Stick X-Axis
+        //   () -> MathUtil.applyDeadband(driverXbox.getRawAxis(4), OperatorConstants.RIGHT_X_DEADBAND) // Right Stick X-Axis
+        //   );
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
     // controls are front-left positive
     // left stick controls translation
     // right stick controls the angular velocity of the robot
-    // Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
-    //     () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-    //     () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-    //     () -> driverXbox.getRawAxis(2));
+    Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
+        () -> MathUtil.applyDeadband(driverXbox.getRawAxis(1), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(driverXbox.getRawAxis(0), OperatorConstants.LEFT_X_DEADBAND),
+        () -> driverXbox.getRawAxis(4),
+        () -> !(driverXbox.getRawAxis(2) > 0.5)); 
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
           () -> MathUtil.applyDeadband(driverXbox.getRawAxis(1), OperatorConstants.LEFT_Y_DEADBAND), // Left Stick Y-Axis
@@ -117,7 +126,7 @@ public class RobotContainer
         () -> driverXbox.getRawAxis(4));
 
   drivebase.setDefaultCommand(
-      !RobotBase.isSimulation() ? driveFieldOrientedDirectAngle : driveFieldOrientedDirectAngleSim);
+      !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
     // armSubsystem.setDefaultCommand(armSubsystem.armCommand(() -> driverXbox.getRawAxis(3) , () -> driverXbox.getRawAxis(2)));
     // SwerveDrive.setHeadingCorrection(true);
     }
@@ -142,6 +151,8 @@ public class RobotContainer
    new JoystickButton(driverXbox, 3).onTrue(new InstantCommand(() -> armSubsystem.setArmPosition(Constants.Arm.Wing)));
        
    new JoystickButton(driverXbox, 7).onTrue(new InstantCommand(() -> armSubsystem.setEncoder(Constants.Arm.Rest)));
+  // new JoystickButton(driverXbox, 9).whileTrue((new alignToAprilTag()));
+   new JoystickButton(driverXbox, 9).whileTrue((new alignToAprilTag(drivebase, 1)));
 
   
    // new JoystickButton(driverXbox, 6).toggleOnTrue(new IntakeIndexCommand(intakeSubsystem, indexSubsystem, 1, 0.5));
@@ -171,7 +182,7 @@ public class RobotContainer
   public Command getAutonomousCommand()
   {
     // An example command will be run in autonomous
-      return new PathPlannerAuto("Example Auto");
+      return new PathPlannerAuto("Example Autoo");
 
   }
 

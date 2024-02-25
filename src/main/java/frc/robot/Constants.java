@@ -6,9 +6,15 @@ package frc.robot;
 
 import com.pathplanner.lib.util.PIDConstants;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import swervelib.math.Matter;
+
+
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean constants. This
@@ -18,8 +24,51 @@ import swervelib.math.Matter;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants
-{
+  public final class Constants {
+  public static final class AprilTag {
+    public final static AprilTagFieldLayout fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    public enum ID {
+      kBlueSourceRight(1),
+      kBlueSourceLeft(2),
+      kRedSpeakerRight(3),
+      kRedSpeakerCenter(4),
+      kRedAmp(5),
+      kBlueAmp(6),
+      kBlueSpeakerCenter(7),
+      kBlueSpeakerLeft(8),
+      kRedSourceRight(9),
+      kRedSourceLeft(10),
+      kRedStageLeft(11),
+      kRedStageRight(12),
+      kRedStageCenter(13),
+      kBlueStageCenter(14),
+      kBlueStageLeft(15),
+      kBlueStageRight(16);
+
+      private final int id;
+
+      private ID(int id) {
+        this.id = id;
+      }
+
+      public int getID() {
+        return id;
+      } 
+    }
+  }
+
+  public static final class Vision {
+    public static final String VISION_CAMERA = "VISION_CAMERA";
+
+    public static final String DASHBOARD_PREFIX = "vision/";
+
+    public static final Transform3d CAMERA_POSITION =
+            new Transform3d(
+                    Units.inchesToMeters(13.5),
+                    0,
+                    Units.inchesToMeters(20),
+                    new Rotation3d(0, Units.degreesToRadians(-20), 0));
+}
 
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
@@ -28,9 +77,9 @@ public final class Constants
   public static final class AutonConstants
   {
 
-    public static final PIDConstants TRANSLATION_PID = new PIDConstants(27, 0, 0.05 );
+    public static final PIDConstants TRANSLATION_PID = new PIDConstants(5, 0, 0 );
 
-    public static final PIDConstants ANGLE_PID   = new PIDConstants(7, 0, 0);
+    public static final PIDConstants ANGLE_PID   = new PIDConstants(0.5, 0, 0.001);
   }
 
   public static final class DrivebaseConstants
