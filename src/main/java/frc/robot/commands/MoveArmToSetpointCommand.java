@@ -1,3 +1,5 @@
+package frc.robot.commands;
+
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ArmSubsystem;
@@ -15,7 +17,7 @@ public class MoveArmToSetpointCommand extends Command {
 
     @Override
     public void initialize() {
-        armSubsystem.setArmPosition(setpoint);
+        // armSubsystem.setArmPosition(setpoint);
     }
 
     @Override
@@ -25,7 +27,7 @@ public class MoveArmToSetpointCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return armSubsystem.isAtSetpoint(setpoint);
+        return false;//armSubsystem.isAtSetpoint(setpoint);
     }
 
     @Override

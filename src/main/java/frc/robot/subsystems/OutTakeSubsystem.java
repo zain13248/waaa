@@ -1,70 +1,124 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class OutTakeSubsystem extends SubsystemBase {
-    private final CANSparkFlex intakeRightMotor;
-    private final CANSparkFlex intakeLeftMotor;
-    private final SparkPIDController pid1;
-    private final SparkPIDController pid2;
+    private final TalonFX intakeRightMotor;
+    private final TalonFX intakeLeftMotor;
+    // private final SparkPIDController pid1;
+    // private final SparkPIDController pid2;
+  private final DutyCycleOut leftOut = new DutyCycleOut(0);
+  private final DutyCycleOut rightOut = new DutyCycleOut(0);
+  private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, false, 0, 0, true, false, false);
 
 
     public OutTakeSubsystem() {
-        intakeRightMotor = new CANSparkFlex(27, MotorType.kBrushless);
-        intakeLeftMotor = new CANSparkFlex(24, MotorType.kBrushless);
-        intakeRightMotor.restoreFactoryDefaults();
-        intakeLeftMotor.restoreFactoryDefaults();
+        intakeRightMotor = new TalonFX(21); 
+        intakeLeftMotor = new TalonFX(22); 
 
-        intakeRightMotor.getEncoder().setVelocityConversionFactor(1);
-        intakeLeftMotor.getEncoder().setVelocityConversionFactor(1);
+    var leftConfiguration = new TalonFXConfiguration();
+    var rightConfiguration = new TalonFXConfiguration();
+    /* User can optionally change the configs or leave it alone to perform a factory default */
+   leftConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    //leftConfiguration.Feedback.FeedbackRemoteSensorID = armAbsolutCANcoder.getDeviceID();
+    //leftConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    leftConfiguration.Slot0.kP = 1.195655000000237487257;
+    leftConfiguration.Slot0.kI = 0.75;
+    leftConfiguration.Slot0.kD = 0;
+    leftConfiguration.Slot0.kV = 0.01500000071246177;
+    leftConfiguration.Voltage.PeakForwardVoltage = 13;
+    leftConfiguration.Voltage.PeakReverseVoltage = -13;
 
+   rightConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+   // rightConfiguration.Feedback.FeedbackRemoteSensorID = armAbsolutCANcoder.getDeviceID();
+    //rightConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.SyncCANcoder;
+    rightConfiguration.Slot0.kP = 1.19565500000237487257;
+    rightConfiguration.Slot0.kI = 0.75;
+    rightConfiguration.Slot0.kD = 0;
+    rightConfiguration.Slot0.kV = 0.01500000071246177;
+    rightConfiguration.Voltage.PeakForwardVoltage = 13;
+    rightConfiguration.Voltage.PeakReverseVoltage = -13;
 
-        pid1 = intakeRightMotor.getPIDController();
-        pid2 = intakeLeftMotor.getPIDController();
+    // absoluteEncoderConfiguration.MagnetSensor.
+
+    intakeLeftMotor.getConfigurator().apply(leftConfiguration);
+    intakeRightMotor.getConfigurator().apply(rightConfiguration);
         
         // pid1.setSmartMotionMaxAccel(0, 0);
+        
 
-        pid1.setP(0.0005500000237487257);
-        pid2.setP(0.0005000000237487257);
+        // pid1.setP(0.00165500000237487257); intakeRightMotor
+        // pid2.setP(0.001655000000237487257);
 
-        pid1.setI(0);
-        pid2.setI(0);
+        // pid1.setI(0);
+        // pid2.setI(0);
+        // pid1.setD(0);
+        // pid2.setD(0);
 
-        pid1.setD(0);
-        pid2.setD(0);
+        // pid1.setFF(0.0001500000071246177);
+        // pid2.setFF(0.0001500000071246177);
 
-        pid1.setFF(0.0001500000071246177);
-        pid2.setFF(0.0001500000071246177);
 
     }
 
-    public void runOutTake(double N_speed, double P_speed) {
-        pid1.setReference(N_speed, ControlType.kVelocity);
-        pid2.setReference(-P_speed, ControlType.kVelocity);
 
+
+
+
+
+    // public void runOutTake(double N_speed, double P_speed) {
+    //     N_speed = Math.max( Math.min(N_speed , 1) , -1);
+    //     P_speed = Math.max( Math.min(N_speed , 1) , -1);
+    //     leftOut.Output = N_speed;
+    //     rightOut.Output = N_speed;
+
+    //     intakeLeftMotor.setControl(leftOut);
+    //     intakeRightMotor.setControl(rightOut);
+    // }
+    public void runOutTake(double N_speed , double P_speed){
+        intakeLeftMotor.setControl(m_voltageVelocity.withVelocity(N_speed));
+        intakeRightMotor.setControl(m_voltageVelocity.withVelocity(P_speed));
+
+    }
+
+    public Command runOutTakeCommand(double N_speed , double P_speed){
+        return runOnce(() -> {
+            runOutTake(N_speed, P_speed);
+            }
+        );
     }
 
     public void stopOutTake() {
-        pid1.setReference(0, ControlType.kVelocity);
-        pid2.setReference(0 , ControlType.kVelocity);
         intakeLeftMotor.set(0);
         intakeRightMotor.set(0);
 
     }
 
     public double getRightMotorVelocity() {
-        return intakeRightMotor.getEncoder().getVelocity();
+        return intakeRightMotor.getVelocity().getValueAsDouble();
         }
         
         public double getLeftMotorVelocity() {
-        return intakeLeftMotor.getEncoder().getVelocity();
+        return intakeLeftMotor.getVelocity().getValueAsDouble();
         }
     public void periodic() {
         double currentRightSpeed = this.getRightMotorVelocity();
@@ -73,6 +127,6 @@ public class OutTakeSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("left Speed outake", currentLeftSpeed);
         SmartDashboard.putNumber("right Speed outake", currentRightSpeed);
 
-        SmartDashboard.putBoolean("Outake Spool", Math.abs(currentRightSpeed - Constants.IntakeConstants.OUTTAKE_IN) <= Constants.Shooter.tolerance && Math.abs(currentLeftSpeed + Constants.IntakeConstants.OUTTAKE_OUT) <= Constants.Shooter.tolerance);
+        SmartDashboard.putBoolean("Outake Spool", Math.abs(currentRightSpeed - 70) <= Constants.Shooter.tolerance && Math.abs(currentLeftSpeed + 70) <= Constants.Shooter.tolerance);
     }
 }

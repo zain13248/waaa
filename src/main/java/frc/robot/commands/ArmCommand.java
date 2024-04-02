@@ -5,20 +5,21 @@ import frc.robot.subsystems.ArmSubsystem;
 
 public class ArmCommand extends Command {
     private final ArmSubsystem ArmSubsystem;
-    private final double speed;
+    private final double position;
 
 
-    public ArmCommand(ArmSubsystem intake,double speed) {
+    public ArmCommand(ArmSubsystem intake,double position) {
         this.ArmSubsystem = intake;
-        this.speed = speed;
+        this.position = position;
 
         addRequirements(ArmSubsystem);
     }
 
     @Override
     public void initialize() {
+        // ArmSubsystem.setArmPosition(position);
         // Start the outtake motors at the given speed
-        ArmSubsystem.runArm(speed);
+        // ArmSubsystem.runArm(speed);
     }
 
     @Override
@@ -29,11 +30,11 @@ public class ArmCommand extends Command {
     @Override
     public boolean isFinished() {
         return false;
+        // return ArmSubsystem.isAtSetpoint(position);
     }
 
     @Override
     public void end(boolean interrupted) {
         // Stop the outtake motors
-         ArmSubsystem.stopArm();
     }
 }

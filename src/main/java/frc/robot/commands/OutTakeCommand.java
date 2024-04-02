@@ -1,12 +1,19 @@
 package frc.robot.commands;
 
+import edu.wpi.first.hal.LEDJNI;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.LED;
+import frc.robot.subsystems.CANdleSystem;
 import frc.robot.subsystems.OutTakeSubsystem;
+
+import frc.robot.subsystems.CANdleSystem;
 
 public class OutTakeCommand extends Command {
     private final OutTakeSubsystem outTakeSubsystem;
     private final double speed;
     private final double speed1;
+
 
     private final double tolerance; // This is the allowed error between the target and actual speeds
 
@@ -21,13 +28,17 @@ public class OutTakeCommand extends Command {
 
     @Override
     public void initialize() {
-        // Start the outtake motors at the given speed
         outTakeSubsystem.runOutTake(speed1, speed);
+        
+        
     }
 
     @Override
     public void execute() {
         // Execution is handled in initialize, nothing needed here unless you're checking conditions continuously
+        SmartDashboard.putBoolean("SHOOTER Spooling", true);
+        SmartDashboard.putNumber("SHOOTER Speed", outTakeSubsystem.getLeftMotorVelocity());
+
     }
 
     @Override
@@ -43,5 +54,6 @@ public class OutTakeCommand extends Command {
     public void end(boolean interrupted) {
         // Stop the outtake motors
         // outTakeSubsystem.stopOutTake()
+        SmartDashboard.putBoolean("SHOOTER Spooling", false);
     }
 }

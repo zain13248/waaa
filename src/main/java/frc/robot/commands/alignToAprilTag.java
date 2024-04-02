@@ -1,3 +1,5 @@
+package frc.robot.commands;
+
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
@@ -14,20 +16,18 @@ import swervelib.SwerveController;
 
 public class alignToAprilTag extends Command {
   /** Creates a new aprilTagSwerve. */
-  int targetTag;
   Double tx,ty,ta;
-  Boolean driveMode;
+ // Boolean driveMode;
   SwerveSubsystem swerve;
   SwerveController controller;
   double kP,kI,kD;
   PIDController thetaController;
+  int targetTag;
 
-public alignToAprilTag(SwerveSubsystem swerve,int targetTag)
+public alignToAprilTag(SwerveSubsystem swerve, int targetTag)
 {
-  
-this.swerve = swerve;
-this.targetTag=targetTag;
 
+this.swerve = swerve;
 this.controller = swerve.getSwerveController();
 // Use addRequirements() here to declare subsystem dependencies.
 addRequirements(swerve);
@@ -36,52 +36,53 @@ addRequirements(swerve);
 // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    kP = .0125;
-    kI= 0.00001;
-    kD = 0.000001;
-    thetaController = new PIDController(kP, kI, kD);
-    swerve.limelightOn();
+
+
+
+    thetaController = new PIDController(Constants.NotePID.kP, Constants.NotePID.kI, Constants.NotePID.kD);
+   // swerve.limelightForceOn(1);
     getLimelightValues();
-    System.out.println("LIMELIGHT TRACKING HAS BEGUN!");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     getLimelightValues();
-    printLimelightVal();
-    swerve.drive(new Translation2d(0, 0),
-    (thetaController.calculate(swerve.getLimelightY(),0) * controller.config.maxAngularVelocity),
-    driveMode);
+    printLimelightVal(); // -0.1
+    swerve.drive(new Translation2d(-0.5, 0),
+    (thetaController.calculate(swerve.getLimelightX(0),0) * controller.config.maxAngularVelocity), false);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    swerve.limelightOff();
+    swerve.limelightOff(0);
         swerve.drive(new Translation2d(
                  0,
                  0),
                  0,
-                 driveMode);
+                 false);
   
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(ty>10){
+   if(Math.abs(tx) > 1 || Math.abs(ta) < 4 ){
+
       return false;
     }else return true;
+
+   // return (System.currentTimeMillis() - startTime) >= (2 * 1000);
   }
 
 
 
   public void getLimelightValues()
   {
-    tx= swerve.getLimelightX();
-    ty = swerve.getLimelightY();
-    ta = swerve.getLimelightA();
+    tx= swerve.getLimelightX(0);
+    ty = swerve.getLimelightY(0);
+    ta = swerve.getLimelightA(0);
   }
 
   public void printLimelightVal()
